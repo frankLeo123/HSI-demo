@@ -91,22 +91,84 @@ def plot(img):
     # plt.hist(ah, bins = 256,normed =1,facecolor = 'r',edgecolor = 'r',hold = 1)
     # plt.show()
 
-def grads(img):
+def grads(img,path):
+    global H
+    global S
+    global I
+    # img_hsi = rgb2hsi(img)
+    # 灰度转换公式
+    # Y = 0.299R + 0.587G + 0.114B
+    # Y = Y / (1 << (8 - 转换的位数));
+    img_gray = cv2.cvtColor(img,cv2.COLOR_RGB2GRAY)
+    # grad = np.zeros(img.shape[0]-1, img.shape[1]-1)
+    # grad_h = np.zeros(img.shape[0]-1, img.shape[1]-1)
+    # grad_s = np.zeros(img.shape[0]-1, img.shape[1]-1)
+    # grad_i = np.zeros(img.shape[0]-1, img.shape[1]-1)
+    img_h = np.zeros((img.shape[0], img.shape[1],3),np.uint8  )
+    img_s = np.zeros((img.shape[0], img.shape[1],3),np.uint8  )
+    img_i = np.zeros((img.shape[0], img.shape[1],3),np.uint8  )
+    print("row: ", img.shape[0],"col: ",img.shape[1])
     for i in range(1,img.shape[0]-1):
         for j in range(1,img.shape[1]-1):
-            grad = img[i,j]
+            grad = abs(img_gray[i,j] - img_gray[i- 1,j-1]) + abs(img_gray[i,j] - img_gray[i- 1,j]) + abs(img_gray[i,j] - img_gray[i- 1,j+1]) + abs(img_gray[i,j] - img_gray[i,j-1])
+            + abs(img_gray[i, j] - img_gray[i, j + 1])+ abs(img_gray[i, j] - img_gray[i + 1 , j - 1])+ abs(img_gray[i, j] - img_gray[i +1, j + 1]) + abs(img_gray[i, j] - img_gray[i +1, j])
+
+            grad_h = abs(H[i, j] - H[i - 1, j - 1]) + abs(H[i, j] - H[i - 1, j]) + abs(H[i, j] - H[i - 1, j + 1]) + abs(H[i, j] - H[i, j - 1])
+            + abs(H[i, j] - H[i, j + 1]) + abs(H[i, j] - H[i + 1, j - 1]) + abs(H[i, j] - H[i + 1, j + 1]) + abs(H[i, j] - H[i + 1, j])
+
+            grad_s= abs(S[i, j] - S[i - 1, j - 1]) + abs(S[i, j] - S[i - 1, j]) + abs(S[i, j] - S[i - 1, j + 1]) + abs(S[i, j] - S[i, j - 1])
+            + abs(S[i, j] - S[i, j + 1]) + abs(S[i, j] - S[i + 1, j - 1]) + abs(S[i, j] - S[i + 1, j + 1]) + abs(S[i, j] - S[i + 1, j])
+
+            grad_i = abs(I[i, j] - I[i - 1, j - 1]) + abs(I[i, j] - I[i - 1, j]) + abs(I[i, j] - I[i - 1, j + 1]) + abs(I[i, j] - I[i, j - 1])+ abs(I[i, j] - I[i, j + 1])
+            + abs(I[i, j] - I[i + 1, j - 1]) + abs(I[i, j] - I[i + 1, j + 1]) + abs(I[i, j] - I[i + 1, j])
+
+            if grad_h > grad:
+                cv2.circle(img_h,(j,i),1,(0,0,255),1)
+            if grad_h < grad:
+                cv2.circle(img_h,(j,i),1,(255,255,255),1)
+            if grad_h == grad:
+                cv2.circle(img_h,(j,i),1,(255,255,255),1)
+            if grad_s > grad:
+                cv2.circle(img_s,(j,i),1,(0,0,255),1)
+            if grad_s < grad:
+                cv2.circle(img_s,(j,i),1,(255,255,255),1)
+            if grad_s == grad:
+                cv2.circle(img_s,(j,i),1,(255,255,255),1)
+            if grad_i > grad:
+                cv2.circle(img_i,(j,i),1,(0,0,255),1)
+            if grad_i < grad:
+                cv2.circle(img_i,(j,i),1,(255,255,255),1)
+            if grad_i == grad:
+                cv2.circle(img_i,(j,i),1,(255,255,255),1)
+    cv2.circle(img, (20, 40), 10, (255, 0, 0), 1)
+    cv2.circle(img, (20, 80), 10, (0, 255, 0), 1)
+    cv2.circle(img, (20, 120), 10, (0, 0, 255), 1)
+    cv2.imwrite(path + "demo.png",img)
+    cv2.imwrite(path + "res_h.png",img_h)
+    cv2.imwrite(path + "res_s.png", img_s)
+    cv2.imwrite(path + "res_i.png", img_i)
+    # cv2.waitKey(0)
+            # print(grad)
+def canny(img):
+    # for i in range(50,151,50):
+    #     for j in range(300,601,50):
+    # 150 ，350 阈值
+    edge = cv2.Canny(img, 150 ,350)
+    cv2.imwrite("./debug/canny.png",edge)
 
 
 
 if __name__ == '__main__':
-    pic1 = cv2.imread("./res/bad.png")
-    path = "./debug/hsi/bad/"
+    pic1 = cv2.imread("./res/leaf.jpg")
+    path = "./debug/hsi/leaf/"
     # cv2.imshow("img", pic1)
     # cv2.waitKey(0)
     hsi = rgb2hsi(pic1)
     save_image(hsi,path)
     # cv2.imshow("demo",H)
-    plot(hsi)
+    # grads(pic1,path)
+    canny(I)
+    # plot(hsi)
     # cv2.waitKey(0)
     # split rgb to hsi
 
